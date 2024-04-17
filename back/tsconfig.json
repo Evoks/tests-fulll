@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "allowJs": true,
+    "checkJs": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "types": ["jest", "node"]
+  },
+  "include": ["tests/**/*.ts", "src/**/*.ts", "src/**/*.d.ts"],
+  "exclude": ["dist"]
+}
