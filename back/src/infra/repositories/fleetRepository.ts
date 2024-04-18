@@ -2,6 +2,7 @@ import db from '../db/dbManager';
 import type { IFleetRepository } from '../../domain/repositories/IFleetRepository';
 import { Fleet, Vehicle } from '../../domain';
 import AppError from '../../app/classes/appError';
+import type { VehicleMap } from '../../domain/aggregates/fleet';
 
 export class FleetRepository implements IFleetRepository {
   /**
@@ -13,7 +14,7 @@ export class FleetRepository implements IFleetRepository {
     const sql = 'INSERT INTO fleets (id) VALUES (?)';
     const queryResult = await db.getConnection().run(sql, [fleetId]);
     if (!queryResult || !queryResult?.lastID) return undefined;
-    return new Fleet(queryResult.lastID, []);
+    return new Fleet(queryResult.lastID, {});
   }
 
   /**
@@ -32,13 +33,16 @@ export class FleetRepository implements IFleetRepository {
   /**
    * Find all vehicles in a fleet
    * @param fleetId
-   * @returns Promise<Vehicle[]>
+   * @returns Promise<VehicleMap>
    */
-  async findAllFleetVehicles(fleetId: number): Promise<Vehicle[]> {
+  async findAllFleetVehicles(fleetId: number): Promise<VehicleMap> {
     const fleetVehiclesSql = 'SELECT * FROM fleet_vehicles WHERE fleetId = ?';
     const vehiclesData = await db.getConnection().all(fleetVehiclesSql, [fleetId]);
-    if (!vehiclesData) return [];
-    const vehicles = vehiclesData.map((v) => new Vehicle(v.vehicleId, v.plateNumber));
+    if (!vehiclesData) return {};
+    const vehicles: VehicleMap = {};
+    for (const vehicleData of vehiclesData) {
+      vehicles[vehicleData.platNumber] = new Vehicle(vehicleData.vehicleId, vehicleData.plateNumber);
+    }
     return vehicles;
   }
 
@@ -55,16 +59,15 @@ export class FleetRepository implements IFleetRepository {
       const newFleetVehicles = fleet.getFleetVehicles();
 
       // we find the vehicles to delete in the db
-      const vehiclesToDelete = oldFleetVehicules.filter(
-        (v: Vehicle) => !newFleetVehicles.map((v) => v.getPlateNumber()).includes(v.getPlateNumber()),
+      const vehiclesToDeletePlateNumbers = Object.keys(oldFleetVehicules).filter(
+        (plateNumber: string) => !newFleetVehicles[plateNumber],
       );
-      const vehiclesToDeletePlateNumbers = vehiclesToDelete.map((v) => v.getPlateNumber());
       const sqlDeleteVehicles = 'DELETE FROM fleet_vehicles WHERE fleetId = ? AND plateNumber IN (?)';
       await db.getConnection().run(sqlDeleteVehicles, [fleet.getId(), vehiclesToDeletePlateNumbers]);
 
       // we find the vehicles to insert in the db
-      const vehiclesToInsert = newFleetVehicles.filter(
-        (v: Vehicle) => !oldFleetVehicules.map((v) => v.getPlateNumber()).includes(v.getPlateNumber()),
+      const vehiclesToInsert = Object.values(newFleetVehicles).filter(
+        (vehicle: Vehicle) => !oldFleetVehicules[vehicle.getPlateNumber()],
       );
       const placeholders = vehiclesToInsert.map(() => '(?, ?, ?)').join(', ');
       const sqlInsertVehicles = `INSERT INTO fleet_vehicles (vehicleId, plateNumber, fleetId) VALUES ${placeholders}`;

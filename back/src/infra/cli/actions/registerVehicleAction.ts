@@ -44,7 +44,7 @@ export async function findOrCreateVehicle(plateNumber: string): Promise<Vehicle>
  * @returns Promise<Fleet>
  */
 export async function registerVehicleInFleet(fleet: Fleet, vehicle: Vehicle): Promise<Fleet> {
-  if (fleet.getFleetVehicles().some((v) => v.getPlateNumber() === vehicle.getPlateNumber())) {
+  if (fleet.getFleetVehicles()?.[vehicle.getPlateNumber()]) {
     throw new AppError(`Vehicle ${vehicle.getPlateNumber()} already registered in fleet`);
   }
   return await registerVehicleToFleetCommandHandler.handle({
