@@ -84,14 +84,15 @@ export class VehicleRepository implements IVehicleRepository {
    * @returns Promise<void>
    */
   async update(vehicle: Vehicle): Promise<void> {
+		const location = vehicle.getParkingLocation();
     await db
       .getConnection()
       .run('INSERT OR REPLACE INTO vehicles (id, plateNumber, lat, lng, alt) VALUES (?, ?, ?, ?, ?)', [
         vehicle.getId(),
         vehicle.getPlateNumber(),
-        vehicle.getParkingLocation()?.lat,
-        vehicle.getParkingLocation()?.lng,
-        vehicle.getParkingLocation()?.alt,
+				location?.lat,
+				location?.lng,
+				location?.alt,
       ]);
   }
 }

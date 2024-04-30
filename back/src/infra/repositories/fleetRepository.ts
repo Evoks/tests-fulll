@@ -26,7 +26,6 @@ export class FleetRepository implements IFleetRepository {
     const sql = 'SELECT * FROM fleets WHERE id = ?';
     const fleet = await db.getConnection().get(sql, [fleetId]);
     if (!fleet) return undefined;
-
     return new Fleet(fleet.id, await this.findAllFleetVehicles(fleet.id));
   }
 
@@ -76,8 +75,8 @@ export class FleetRepository implements IFleetRepository {
         sqlInsertVehiclesValues.push(v.getId(), v.getPlateNumber(), fleet.getId());
       }
       await db.getConnection().run(sqlInsertVehicles, sqlInsertVehiclesValues);
-
-      const res = await db.getConnection().run('COMMIT');
+			
+      await db.getConnection().run('COMMIT');
     } catch (error) {
       await db.getConnection().run('ROLLBACK');
       throw new AppError('Error updating fleet');

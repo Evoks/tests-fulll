@@ -2,7 +2,7 @@ import AppError from '../../app/classes/appError';
 import type Vehicle from '../entities/vehicle';
 
 export type VehicleMap = {
-  [key: string]: Vehicle;
+  [plateNumber: string]: Vehicle;
 };
 
 export default class Fleet {

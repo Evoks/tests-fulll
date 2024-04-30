@@ -9,19 +9,6 @@ import {
 } from '../../config';
 
 /**
- * Find a fleet by its id
- * @param fleetId
- * @returns Promise<Fleet>
- */
-export async function findOneFleet(fleetId: number): Promise<Fleet> {
-  const fleet = await findOneFleetQueryHandler.handle({ fleetId });
-  if (!fleet) {
-    throw new AppError(`Fleet ${fleetId} does not exist`);
-  }
-  return fleet;
-}
-
-/**
  * Find or create a vehicle by its plate number
  * @param plateNumber
  * @returns Promise<Vehicle>
